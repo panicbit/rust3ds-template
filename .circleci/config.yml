@@ -1,0 +1,53 @@
+version: 2.0
+
+jobs:
+   build:
+      docker:
+         - image: ubuntu:16.04
+
+      environment:
+         - RUST_VERSION: nightly-2017-07-18
+         - DKA_REV: 47
+         - DEVKITPRO: /opt/devkitpro
+         - DEVKITARM: /opt/devkitpro/devkitARM
+
+      steps:
+         - run:
+            name: Set up $PATH
+            command: |
+               echo "export PATH=$DEVKITARM/bin:$HOME/.cargo/bin:$PATH" >> $BASH_ENV
+
+         - run:
+            name: Install essential tools
+            command: |
+               apt-get -qq update
+               apt-get install -y curl wget git bzip2 gcc build-essential
+
+         - run:
+            name: Install devkitARM
+            command: |
+               pushd /tmp
+               wget https://raw.githubusercontent.com/panicbit/installer/master/perl/devkitARMupdate.pl
+               chmod +x devkitARMupdate.pl
+               ./devkitARMupdate.pl "$DEVKITPRO"
+               popd
+
+         - run:
+            name: Install Rust
+            command: |
+               curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain "$RUST_VERSION"
+               rustup component add rust-src
+
+         - run:
+            name: Install Xargo
+            command: cargo install xargo --git https://github.com/FenrirWolf/xargo --rev metadata
+
+         - checkout
+
+         - run:
+            name: Fix git config for cargo
+            command: git config --global --unset url."ssh://git@github.com".insteadOf
+
+         - run:
+            name: Build project
+            command: make
