@@ -4,7 +4,7 @@ name = "rust3ds-template"
 version = "0.1.0"
 
 [dependencies]
-ctru-rs = { git = "https://github.com/rust3ds/ctru-rs" }
+ctru-rs = { git = "https://github.com/panicbit/ctru-rs", branch = "nightly_update" }
 
 [profile.dev]
 panic = 'abort'
